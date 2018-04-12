@@ -12,7 +12,7 @@ endif
 
 AM_CXXFLAGS = \
 	-Wall \
-	@ENIGMA2_CFLAGS@ \
+	@ENIGMA2_CFLAGS@
 
 if ENABLE_GSTREAMER
 AM_CXXFLAGS += \
@@ -38,17 +38,17 @@ servicemp3epl_la_SOURCES += \
 	m3u8.cpp
 endif
 
-servicemp3_la_LDFLAGS = \
+servicemp3epl_la_LDFLAGS = \
 	-avoid-version \
 	-module \
 	-shared
 
 if ENABLE_GSTREAMER
-servicemp3_la_LDFLAGS += \
+servicemp3epl_la_LDFLAGS += \
 	@GSTREAMER_LIBS@
 endif
 
 if ENABLE_LIBEPLAYER3
-servicemp3_la_LDFLAGS += \
+servicemp3epl_la_LDFLAGS += \
         -leplayer3
 endif
