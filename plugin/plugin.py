@@ -1,7 +1,7 @@
 from Plugins.Plugin import PluginDescriptor
 
 def autostart(reason, **kwargs):
-	import servicemp3
+	import servicemp3epl
 
 def Plugins(**kwargs):
 	return [

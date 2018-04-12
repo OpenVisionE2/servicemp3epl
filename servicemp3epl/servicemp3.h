@@ -18,8 +18,14 @@ class eServiceFactoryMP3: public iServiceHandler
 public:
 	eServiceFactoryMP3();
 	virtual ~eServiceFactoryMP3();
+#ifdef ENABLE_LIBEPLAYER3
+	enum {
+		id = 4097,
+		idServiceMP3 = 5001
+	};
+#else
 	enum { id = 0x1001 };
-
+#endif
 		// iServiceHandler
 	RESULT play(const eServiceReference &, ePtr<iPlayableService> &ptr);
 	RESULT record(const eServiceReference &, ePtr<iRecordableService> &ptr);
@@ -28,6 +34,9 @@ public:
 	RESULT offlineOperations(const eServiceReference &, ePtr<iServiceOfflineOperations> &ptr);
 private:
 	ePtr<eStaticServiceMP3Info> m_service_info;
+#ifdef ENABLE_LIBEPLAYER3
+	bool defaultMP3Player;
+#endif
 };
 
 class eStaticServiceMP3Info: public iStaticServiceInformation
@@ -72,9 +81,7 @@ class eServiceMP3InfoContainer: public iServiceInfoContainer
 
 	unsigned char *bufferData;
 	unsigned int bufferSize;
-#if GST_VERSION_MAJOR >= 1
 	GstMapInfo map;
-#endif
 
 public:
 	eServiceMP3InfoContainer();
@@ -239,11 +246,11 @@ public:
 	{
 		audiotype_t audiotype;
 		containertype_t containertype;
-		bool is_video;
+		bool is_audio;
 		bool is_streaming;
 		bool is_hls;
 		sourceStream()
-			:audiotype(atUnknown), containertype(ctNone), is_video(FALSE), is_streaming(FALSE), is_hls(FALSE)
+			:audiotype(atUnknown), containertype(ctNone), is_audio(FALSE), is_streaming(FALSE), is_hls(FALSE)
 		{
 		}
 	};
@@ -307,15 +314,17 @@ private:
 	bool m_is_live;
 	bool m_use_prefillbuffer;
 	bool m_paused;
-	bool m_seek_paused;
+	bool m_first_paused;
 	/* cuesheet load check */
 	bool m_cuesheet_loaded;
+	bool m_audiosink_not_running;
 	/* servicemMP3 chapter TOC support CVR */
-#if GST_VERSION_MAJOR >= 1
 	bool m_use_chapter_entries;
 	/* last used seek position gst-1 only */
 	gint64 m_last_seek_pos;
-#endif
+	ePtr<eTimer> m_play_position_timer;
+	void playPositionTiming();
+	bool m_use_last_seek;
 	bufferInfo m_bufferInfo;
 	errorInfo m_errorInfo;
 	std::string m_download_buffer_path;
@@ -341,13 +350,9 @@ private:
 	GstPad* gstCreateSubtitleSink(eServiceMP3* _this, subtype_t type);
 	void gstPoll(ePtr<GstMessageContainer> const &);
 	static void playbinNotifySource(GObject *object, GParamSpec *unused, gpointer user_data);
-#if GST_VERSION_MAJOR < 1
-	static gint match_sinktype(GstElement *element, gpointer type);
-#else
-/* TOC processing CVR */
+	/* TOC processing CVR */
 	void HandleTocEntry(GstMessage *msg);
 	static gint match_sinktype(const GValue *velement, const gchar *type);
-#endif
 	static void handleElementAdded(GstBin *bin, GstElement *element, gpointer user_data);
 
 	struct subtitle_page_t
@@ -374,7 +379,7 @@ private:
 	void pullSubtitle(GstBuffer *buffer);
 	void sourceTimeout();
 	sourceStream m_sourceinfo;
-	gulong m_subs_to_pull_handler_id;
+	gulong m_subs_to_pull_handler_id, m_notify_source_handler_id, m_notify_element_added_handler_id;
 
 	RESULT seekToImpl(pts_t to);
 
