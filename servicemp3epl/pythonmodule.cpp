@@ -7,7 +7,7 @@ static PyMethodDef servicemp3Methods[] =
 };
 
 PyMODINIT_FUNC
-initservicemp3(void)
+initservicemp3epl(void)
 {
 	Py_InitModule("servicemp3epl", servicemp3Methods);
 }
