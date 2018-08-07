@@ -140,7 +140,12 @@ int M3U8VariantsExplorer::getVariantsFromMasterUrl(const std::string& url, unsig
         path += "?" + query;
     std::string request = "GET ";
     request.append(path).append(" HTTP/1.1\r\n");
-    request.append("Host: ").append(purl.host()).append("\r\n");
+    request.append("Host: ").append(purl.host());
+    if (purl.port() > 0)
+    {
+        request.append(":").append(std::to_string(purl.port()));
+    }
+    request.append("\r\n");
     request.append("User-Agent: ").append(userAgent).append("\r\n");
     request.append("Accept: */*\r\n");
     request.append("Connection: close\r\n");
@@ -173,7 +178,7 @@ int M3U8VariantsExplorer::getVariantsFromMasterUrl(const std::string& url, unsig
     int result = readLine(sd, &lineBuffer, &bufferSize);
     eDebug("[m3u8::%s] Response[%d](size=%d): %s", __func__, lines++, result, lineBuffer);
     result = sscanf(lineBuffer, "%99s %d %99s", protocol, &statusCode, statusMessage);
-    if (result != 3 || (statusCode != 200 && statusCode != 302))
+    if (result != 3 || (statusCode != 200 && statusCode != 301 && statusCode != 302))
     {
             eDebug("[m3u8::%s] - wrong http response code: %d", __func__, statusCode);
             free(lineBuffer);
@@ -226,14 +231,16 @@ int M3U8VariantsExplorer::getVariantsFromMasterUrl(const std::string& url, unsig
                         || !strncasecmp(contenttype, "audio/mpegurl", 13)
                         || !strncasecmp(contenttype, "application/m3u", 15))
                 {
-                    continue;
+                    if (statusCode == 200)
+                    {
+                        fprintf(stderr, "[%s] - not supported contenttype detected: %s!\n", __func__, contenttype);
+                        break;
+                    }
                 }
-                eDebug("[m3u8::%s] - not supported contenttype detected: %s!", __func__, contenttype);
-                break;
             }
         }
 
-        if (statusCode == 302 && strncasecmp(lineBuffer, "location: ", 10) == 0)
+        if ((statusCode == 301 || statusCode == 302) && strncasecmp(lineBuffer, "location: ", 10) == 0)
         {
             std::string newurl = &lineBuffer[10];
             eDebug("[m3u8::%s] - redirecting to: %s", __func__, newurl.c_str());
@@ -275,7 +282,16 @@ int M3U8VariantsExplorer::getVariantsFromMasterUrl(const std::string& url, unsig
             }
             else
             {
-                m3u8StreamInfo.url = url.substr(0, url.rfind('/') + 1) + lineBuffer;
+                if ((lineBuffer[0] == '/') && url.find("//")) {
+                     m3u8StreamInfo.url = url.substr(0, url.find("/", url.find("//") + 2)) + lineBuffer;
+                }
+                else
+                {
+                     if (strlen(lineBuffer) > 0 && lineBuffer[0] == '/')
+                         m3u8StreamInfo.url = purl.proto().append("://").append(purl.host()).append(lineBuffer);
+                     else
+                         m3u8StreamInfo.url = url.substr(0, url.rfind('/') + 1) + lineBuffer;
+                }
             }
             streams.push_back(m3u8StreamInfo);
             m3u8StreamInfoParsing = false;

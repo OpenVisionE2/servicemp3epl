@@ -157,7 +157,7 @@ public:
 	RESULT getCachedSubtitle(SubtitleTrack &track);
 
 	// iStreamedService
-	RESULT streamed(ePtr<iStreamedService> &ptr);
+	RESULT streamed(ePtr<iStreamedService> &ptr){ ptr=this; return 0;};
 	ePtr<iStreamBufferInfo> getBufferCharge();
 	int setBufferSize(int size);
 
