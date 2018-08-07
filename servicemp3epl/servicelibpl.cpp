@@ -1248,23 +1248,6 @@ int eServiceLibpl::getInfo(int w)
 			return resIsPyObject;
 		case sBuffer:
 			return m_bufferInfo.bufferPercent;
-		case sVideoType:
-		{
-			videoStream v;
-			if (!player->videoGetTrackInfo(v,0))
-			{
-				// map to stream type
-				if (v.description == "V_MPEG2") return 0;
-				else if (v.description == "V_MPEG4/ISO/AVC") return 1;
-				else if (v.description.find("V_MPEG4") != std::string::npos) return 4;
-				else if (v.description == "V_MPEG1") return 6;
-				else if (v.description == "V_MPEGH/ISO/HEVC") return 7;
-				else if (v.description == "V_VP8") return 8;
-				else if (v.description == "V_VP9") return 9;
-				else return resNA;
-			}
-			return return resNA;
-		}
 		default:
 			return resNA;
 	}
@@ -1437,7 +1420,7 @@ RESULT eServiceLibpl::getTrackInfo(struct iAudioTrackInfo &info, unsigned int i)
 	return 0;
 }
 
-eAutoInitPtr<eServiceFactoryLibpl> init_eServiceFactoryLibpl(eAutoInitNumbers::service+3, "eServiceFactoryLibpl");
+eAutoInitPtr<eServiceFactoryLibpl> init_eServiceFactoryLibpl(eAutoInitNumbers::service+1, "eServiceFactoryLibpl");
 
 RESULT eServiceLibpl::enableSubtitles(iSubtitleUser *user, struct SubtitleTrack &track)
 {
