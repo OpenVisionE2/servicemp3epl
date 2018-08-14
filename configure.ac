@@ -17,7 +17,6 @@ AC_ARG_ENABLE(libeplayer3,
 if test "$enable_libeplayer3" = "yes"; then
 	AC_DEFINE(ENABLE_LIBEPLAYER3, 1, [include TDT libeplayer3 as player engine support])
 fi
-
 AM_CONDITIONAL(ENABLE_LIBEPLAYER3, test "$enable_libeplayer3" = "yes")
 
 AC_ARG_ENABLE([gstreamer],
