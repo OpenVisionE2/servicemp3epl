@@ -11,13 +11,16 @@ AC_LANG(C++)
 
 PKG_CHECK_MODULES(ENIGMA2, enigma2)
 
-AC_ARG_ENABLE(libeplayer3,
-	[  --enable-libeplayer3          enable TDT libeplayer3 as player engine supportt],
-	[AC_DEFINE(ENABLE_LIBEPLAYER3, 1, [enable TDT libeplayer3 as player engine support])])
+AC_ARG_ENABLE([libeplayer3],
+	[AS_HELP_STRING([--enable-libeplayer3],[enable TDT libeplayer3 as player engine supportt])],
+	[enable_libeplayer3=$enableval],
+	[enable_libeplayer3=yes])
+
+AM_CONDITIONAL(ENABLE_LIBEPLAYER3, test "$enable_libeplayer3" = "yes")
+
 if test "$enable_libeplayer3" = "yes"; then
 	AC_DEFINE(ENABLE_LIBEPLAYER3, 1, [include TDT libeplayer3 as player engine support])
 fi
-AM_CONDITIONAL(ENABLE_LIBEPLAYER3, test "$enable_libeplayer3" = "yes")
 
 AC_ARG_ENABLE([gstreamer],
 	[AS_HELP_STRING([--disable-gstreamer],[disable gstreamer as player engine supportt])],
