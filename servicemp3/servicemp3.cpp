@@ -126,10 +126,15 @@ eServiceFactoryMP3::eServiceFactoryMP3()
 		extensions.push_back("rmvb");
 		extensions.push_back("ogm");
 		extensions.push_back("ogv");
-		extensions.push_back("webm");
 		extensions.push_back("m3u8");
 		extensions.push_back("stream");
 		extensions.push_back("webm");
+		extensions.push_back("amr");
+		extensions.push_back("au");
+		extensions.push_back("mid");
+		extensions.push_back("wv");
+		extensions.push_back("pva");
+		extensions.push_back("wtv");
 #if defined(__sh__)
 		extensions.push_back("mpeg");
 		extensions.push_back("m2ts");
@@ -540,49 +545,55 @@ eServiceMP3::eServiceMP3(eServiceReference ref):
 		ext = filename + strlen(filename);
 
 	m_sourceinfo.audiotype = atUnknown;
-	if ( (strcasecmp(ext, ".mpeg") && strcasecmp(ext, ".mpe") && strcasecmp(ext, ".mpg") && strcasecmp(ext, ".vob") && strcasecmp(ext, ".bin") && strcasecmp(ext, ".dat") ) == 0 )
+	if (strcasecmp(ext, ".mpeg") == 0 || strcasecmp(ext, ".mpe") == 0 || strcasecmp(ext, ".mpg") == 0 || strcasecmp(ext, ".vob") == 0 || strcasecmp(ext, ".bin") == 0)
 		m_sourceinfo.containertype = ctMPEGPS;
-	else if ( strcasecmp(ext, ".ts") == 0 )
+	else if (strcasecmp(ext, ".ts") == 0)
 		m_sourceinfo.containertype = ctMPEGTS;
-	else if ( strcasecmp(ext, ".mkv") == 0 )
+	else if (strcasecmp(ext, ".mkv") == 0)
 		m_sourceinfo.containertype = ctMKV;
-	else if ( strcasecmp(ext, ".ogm") == 0 || strcasecmp(ext, ".ogv") == 0)
+	else if (strcasecmp(ext, ".ogm") == 0 || strcasecmp(ext, ".ogv") == 0)
 		m_sourceinfo.containertype = ctOGG;
-	else if ( strcasecmp(ext, ".avi") == 0 || strcasecmp(ext, ".divx") == 0)
+	else if (strcasecmp(ext, ".avi") == 0 || strcasecmp(ext, ".divx") == 0)
 		m_sourceinfo.containertype = ctAVI;
-	else if ( strcasecmp(ext, ".mp4") == 0 || strcasecmp(ext, ".mov") == 0 || strcasecmp(ext, ".m4v") == 0 || strcasecmp(ext, ".3gp") == 0 || strcasecmp(ext, ".3g2") == 0)
+	else if (strcasecmp(ext, ".mp4") == 0 || strcasecmp(ext, ".mov") == 0 || strcasecmp(ext, ".m4v") == 0 || strcasecmp(ext, ".3gp") == 0 || strcasecmp(ext, ".3g2") == 0)
 		m_sourceinfo.containertype = ctMP4;
-	else if ( strcasecmp(ext, ".asf") == 0 || strcasecmp(ext, ".wmv") == 0)
+	else if (strcasecmp(ext, ".asf") == 0 || strcasecmp(ext, ".wmv") == 0)
 		m_sourceinfo.containertype = ctASF;
-	else if ( strcasecmp(ext, ".webm") == 0)
+	else if (strcasecmp(ext, ".webm") == 0)
 		m_sourceinfo.containertype = ctMKV;
-	else if ( strcasecmp(ext, ".m4a") == 0 )
+	else if (strcasecmp(ext, ".m4a") == 0 || strcasecmp(ext, ".alac") == 0)
 	{
 		m_sourceinfo.containertype = ctMP4;
 		m_sourceinfo.audiotype = atAAC;
 	}
-	else if ( strcasecmp(ext, ".m3u8") != 0 )
+	else if (strcasecmp(ext, ".m3u8") != 0)
 		m_sourceinfo.is_hls = TRUE;
-	else if ( strcasecmp(ext, ".mp3") == 0 )
+	else if (strcasecmp(ext, ".mp3") == 0)
 	{
 		m_sourceinfo.audiotype = atMP3;
 		m_sourceinfo.is_audio = TRUE;
 	}
-	else if ( strcasecmp(ext, ".wma") == 0 )
+	else if (strcasecmp(ext, ".wma") == 0)
 	{
 		m_sourceinfo.audiotype = atWMA;
 		m_sourceinfo.is_audio = TRUE;
 	}
-	else if ( strcasecmp(ext, ".wav") == 0 )
+	else if (strcasecmp(ext, ".wav") == 0 || strcasecmp(ext, ".wave") == 0 || strcasecmp(ext, ".wv") == 0)
 	{
 		m_sourceinfo.audiotype = atPCM;
 		m_sourceinfo.is_audio = TRUE;
 	}
-	else if ( strcasecmp(ext, ".cda") == 0)
+	else if (strcasecmp(ext, ".dts") == 0)
+		m_sourceinfo.audiotype = atDTS;
+	else if (strcasecmp(ext, ".flac") == 0)
+		m_sourceinfo.audiotype = atFLAC;
+	else if (strcasecmp(ext, ".ac3") == 0)
+		m_sourceinfo.audiotype = atAC3;
+	else if (strcasecmp(ext, ".cda") == 0)
 		m_sourceinfo.containertype = ctCDA;
-	if ( strcasecmp(ext, ".dat") == 0 )
+	if (strcasecmp(ext, ".dat") == 0)
 		m_sourceinfo.containertype = ctVCD;
-	if ( strstr(filename, "://") )
+	if (strstr(filename, "://"))
 		m_sourceinfo.is_streaming = TRUE;
 
 	gchar *uri;
@@ -1477,6 +1488,14 @@ int eServiceMP3::getInfo(int w)
 		tag = "has-crc";
 		break;
 	case sBuffer: return m_bufferInfo.bufferPercent;
+	case sVideoType:
+	{
+		if (!videoSink) return -1;
+		guint64 v = -1;
+		g_signal_emit_by_name(videoSink, "get-video-codec", &v);
+		return (int) v;
+		break;
+	}
 	default:
 		return resNA;
 	}
@@ -1500,12 +1519,7 @@ std::string eServiceMP3::getInfoString(int w)
 		case sProvider:
 			return "IPTV";
 		case sServiceref:
-		{
-			eServiceReference ref(m_ref);
-			ref.type = eServiceFactoryMP3::id;
-			ref.path.clear();
-			return ref.toString();
-		}
+			return m_ref.toString();
 		default:
 			break;
 		}
