@@ -1,4 +1,4 @@
-AC_INIT([servicemp3epl], [0.1], [])
+AC_INIT([servicemp3], [0.1], [])
 AM_INIT_AUTOMAKE([subdir-objects foreign dist-bzip2 no-define tar-pax])
 AC_CONFIG_MACRO_DIR([m4])
 LT_INIT
@@ -39,7 +39,7 @@ AC_DEFINE([DEBUG])
 
 AC_CONFIG_FILES([
 Makefile
-servicemp3epl/Makefile
+servicemp3/Makefile
 plugin/Makefile
 ])
 AC_OUTPUT
