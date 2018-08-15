@@ -584,11 +584,20 @@ eServiceMP3::eServiceMP3(eServiceReference ref):
 		m_sourceinfo.is_audio = TRUE;
 	}
 	else if (strcasecmp(ext, ".dts") == 0)
+	{
 		m_sourceinfo.audiotype = atDTS;
+		m_sourceinfo.is_audio = TRUE;
+	}
 	else if (strcasecmp(ext, ".flac") == 0)
+	{
 		m_sourceinfo.audiotype = atFLAC;
+		m_sourceinfo.is_audio = TRUE;
+	}
 	else if (strcasecmp(ext, ".ac3") == 0)
+	{
 		m_sourceinfo.audiotype = atAC3;
+		m_sourceinfo.is_audio = TRUE;
+	}
 	else if (strcasecmp(ext, ".cda") == 0)
 		m_sourceinfo.containertype = ctCDA;
 	if (strcasecmp(ext, ".dat") == 0)
@@ -1490,9 +1499,9 @@ int eServiceMP3::getInfo(int w)
 	case sBuffer: return m_bufferInfo.bufferPercent;
 	case sVideoType:
 	{
-		if (!videoSink) return -1;
+		if (!dvb_videosink) return -1;
 		guint64 v = -1;
-		g_signal_emit_by_name(videoSink, "get-video-codec", &v);
+		g_signal_emit_by_name(dvb_videosink, "get-video-codec", &v);
 		return (int) v;
 		break;
 	}
@@ -1988,7 +1997,7 @@ void eServiceMP3::gstBusCall(GstMessage *msg)
 						m_is_live = true;
 					m_event((iPlayableService*)this, evGstreamerPlayStarted);
 
-					if (!videoSink || m_ref.getData(0) == 2) // show radio pic
+					if (!dvb_videosink || m_ref.getData(0) == 2) // show radio pic
 					{
 						bool showRadioBackground = eConfigManager::getConfigBoolValue("config.misc.showradiopic", true);
 						std::string radio_pic = eConfigManager::getConfigValue(showRadioBackground ? "config.misc.radiopic" : "config.misc.blackradiopic");
