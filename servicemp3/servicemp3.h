@@ -315,6 +315,7 @@ private:
 	bool m_use_prefillbuffer;
 	bool m_paused;
 	bool m_first_paused;
+	bool m_autoaudio;
 	/* cuesheet load check */
 	bool m_cuesheet_loaded;
 	bool m_audiosink_not_running;
