@@ -1232,32 +1232,6 @@ int eServiceLibpl::getInfo(int w)
 	case sTagPreviewImage:
 	case sTagAttachment:
 		return resIsPyObject;
-	case sTagTrackNumber:
-		return streamid.programid;
-	case sTagTrackCount:
-		return fileinfo.u32ProgramNum;
-	case sTagAlbumVolumeNumber:
-		return resNA;
-	case sTagAlbumVolumeCount:
-		return resNA;
-	case sTagBitrate:
-		return fileinfo.u32Bitrate;
-	case sTagNominalBitrate:
-		return fileinfo.u32Bitrate;
-	case sTagMinimumBitrate:
-		return fileinfo.u32Bitrate;
-	case sTagMaximumBitrate:
-		return fileinfo.u32Bitrate;
-	case sTagSerial:
-		return resNA;
-	case sTagEncoderVersion:
-		if (pstVidStream)
-		{
-			return pstVidStream->u32CodecVersion;
-		}
-		break;
-	case sTagCRC:
-		return resNA;
 		case sBuffer:
 			return m_bufferInfo.bufferPercent;
 		default:
@@ -1290,15 +1264,6 @@ std::string eServiceLibpl::getInfoString(int w)
 	switch (w)
 	{
 		case sTagTitle:
-		if (pstProgram)
-		{
-			return pstProgram->aszServiceName;
-		}
-		break;
-	case sTagArtist:
-		break;
-	case sTagAlbum:
-		break;
 		case sTagTitleSortname:
 			return getTag("title");
 		case sTagArtist:
