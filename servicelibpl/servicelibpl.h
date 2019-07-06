@@ -24,14 +24,7 @@ class eServiceFactoryLibpl: public iServiceHandler
 public:
 	eServiceFactoryLibpl();
 	virtual ~eServiceFactoryLibpl();
-#ifdef ENABLE_GSTREAMER
-	enum {
-		id = 4097,
-		idServiceLibpl = 5003
-	};
-#else
 	enum { id = 0x1001 };
-#endif
 
 	// iServiceHandler
 	RESULT play(const eServiceReference &, ePtr<iPlayableService> &ptr);
@@ -42,9 +35,6 @@ public:
 
 private:
 	ePtr<eStaticServiceLibplInfo> m_service_info;
-#ifdef ENABLE_GSTREAMER
-	bool defaultMP3_Player;
-#endif
 };
 
 class eStaticServiceLibplInfo: public iStaticServiceInformation
@@ -104,13 +94,13 @@ public:
 	RESULT subtitle(ePtr<iSubtitleOutput> &ptr);
 	RESULT audioDelay(ePtr<iAudioDelay> &ptr);
 	RESULT cueSheet(ePtr<iCueSheet> &ptr);
-	void setQpipMode(bool value, bool audio) { }
 
 	// not implemented (yet)
 	RESULT setTarget(int target, bool noaudio = false) { return -1; }
 	RESULT frontendInfo(ePtr<iFrontendInformation> &ptr) { ptr = 0; return -1; }
 	RESULT subServices(ePtr<iSubserviceList> &ptr) { ptr = 0; return -1; }
 	RESULT timeshift(ePtr<iTimeshiftService> &ptr) { ptr = 0; return -1; }
+	void setQpipMode(bool, bool) {}
 
 	// iCueSheet
 	PyObject *getCutList();
@@ -124,6 +114,7 @@ public:
 	// iPausableService
 	RESULT pause();
 	RESULT unpause();
+
 	RESULT info(ePtr<iServiceInformation>&);
 
 	// iSeekableService
@@ -223,6 +214,7 @@ protected:
 		{
 		}
 	};
+
 	std::multiset<cueEntry> m_cue_entries;
 	int m_cuesheet_changed, m_cutlist_enabled;
 	void loadCuesheet();

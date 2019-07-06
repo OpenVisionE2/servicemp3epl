@@ -1,4 +1,4 @@
-AC_INIT([servicemp3], [0.1], [])
+AC_INIT([servicelibpl], [0.1], [])
 AM_INIT_AUTOMAKE([subdir-objects foreign dist-bzip2 no-define tar-pax])
 AC_CONFIG_MACRO_DIR([m4])
 LT_INIT
@@ -11,37 +11,21 @@ AC_LANG(C++)
 
 PKG_CHECK_MODULES(ENIGMA2, enigma2)
 
-AC_ARG_ENABLE([libeplayer3],
-	[AS_HELP_STRING([--enable-libeplayer3],[enable TDT libeplayer3 as player engine supportt])],
-	[enable_libeplayer3=$enableval],
-	[enable_libeplayer3=yes])
-
-AM_CONDITIONAL(ENABLE_LIBEPLAYER3, test "$enable_libeplayer3" = "yes")
-
-if test "$enable_libeplayer3" = "yes"; then
-	AC_DEFINE(ENABLE_LIBEPLAYER3, 1, [include TDT libeplayer3 as player engine support])
-fi
-
-AC_ARG_ENABLE([gstreamer],
-	[AS_HELP_STRING([--disable-gstreamer],[disable gstreamer as player engine supportt])],
-	[enable_gstreamer=$enableval],
-	[enable_gstreamer=yes])
-
-AM_CONDITIONAL(ENABLE_GSTREAMER, test "$enable_gstreamer" = "yes")
-
-if test "$enable_gstreamer" = "yes"; then
-	AC_DEFINE(ENABLE_GSTREAMER, 1, [include gstreamer as player engine support])
-	AC_ARG_WITH(gstversion,
-		AS_HELP_STRING([--with-gstversion],[use gstreamer version (major.minor)]),
-		[GST_MAJORMINOR=$withval],[GST_MAJORMINOR=1.0])
-	PKG_CHECK_MODULES(GSTREAMER, gstreamer-$GST_MAJORMINOR gstreamer-pbutils-$GST_MAJORMINOR)
-fi
-
 AC_DEFINE([DEBUG])
+
+AC_ARG_WITH(binarycompatibledebug,
+	AC_HELP_STRING([--with-binarycompatibledebug], [use e2 independent debug output]),
+	[[with_binarycompatibledebug=$withval]],
+	[[with_binarycompatibledebug=no]]
+)
+
+if test x"$with_binarycompatibledebug" = xyes ; then
+	AC_DEFINE([BINARY_COMPATIBLE_DEBUGLOG])
+fi
 
 AC_CONFIG_FILES([
 Makefile
-servicemp3/Makefile
+servicelibpl/Makefile
 plugin/Makefile
 ])
 AC_OUTPUT

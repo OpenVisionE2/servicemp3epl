@@ -12,19 +12,30 @@
 #include <servicelibpl.h>
 #include <lib/service/service.h>
 #include <lib/gdi/gpixmap.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/ioctl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <errno.h>
 #include <string>
+#include <sys/socket.h>
+#include <linux/netlink.h>
 
-#ifdef ENABLE_GSTREAMER
-#include <lib/base/eenv.h>
+#include <linux/dvb/audio.h>
+#include <linux/dvb/video.h>
+#ifdef BINARY_COMPATIBLE_DEBUGLOG
+#ifdef DEBUG
+#undef eDebug
+#define eDebug(...) do { fflush(stdout); printf(__VA_ARGS__); printf("\n"); fflush(stdout); } while (0);
+#else
+inline void eDebug(const char* fmt, ...) { }
+#endif
 #endif
 
 eServiceFactoryLibpl::eServiceFactoryLibpl()
 {
 	ePtr<eServiceCenter> sc;
-
-#ifdef ENABLE_GSTREAMER
-	defaultMP3_Player = (::access(eEnv::resolve("${sysconfdir}/enigma2/mp3player").c_str(), F_OK) >= 0);
-#endif
 
 	eServiceCenter::getPrivInstance(sc);
 	if (sc)
@@ -64,16 +75,8 @@ eServiceFactoryLibpl::eServiceFactoryLibpl()
 		extensions.push_back("ifo");
 		extensions.push_back("wmv");
 		extensions.push_back("wma");
-#ifdef ENABLE_GSTREAMER
-		if (!defaultMP3_Player)
-		{
-			sc->addServiceFactory(eServiceFactoryLibpl::id, this, extensions);
-		}
-		extensions.clear();
-		sc->addServiceFactory(eServiceFactoryLibpl::idServiceLibpl, this, extensions);
-#else
+		sc->removeServiceFactory(0x1001); /* servicemp3 */
 		sc->addServiceFactory(eServiceFactoryLibpl::id, this, extensions);
-#endif
 	}
 
 	m_service_info = new eStaticServiceLibplInfo();
@@ -85,15 +88,7 @@ eServiceFactoryLibpl::~eServiceFactoryLibpl()
 	eServiceCenter::getPrivInstance(sc);
 
 	if (sc)
-#ifdef ENABLE_GSTREAMER
-		sc->removeServiceFactory(eServiceFactoryLibpl::idServiceLibpl);
-		if (!defaultMP3_Player)
-		{
-			sc->removeServiceFactory(eServiceFactoryLibpl::id);
-		}
-#else
 		sc->removeServiceFactory(eServiceFactoryLibpl::id);
-#endif
 }
 
 DEFINE_REF(eServiceFactoryLibpl)
@@ -211,7 +206,6 @@ RESULT eStaticServiceLibplInfo::getName(const eServiceReference &ref, std::strin
 		else
 			name = ref.path;
 	}
-
 	return 0;
 }
 
@@ -243,7 +237,6 @@ int eStaticServiceLibplInfo::getInfo(const eServiceReference &ref, int w)
 		}
 		break;
 	}
-
 	return iServiceInformation::resNA;
 }
 
@@ -254,7 +247,6 @@ long long eStaticServiceLibplInfo::getFileSize(const eServiceReference &ref)
 	{
 		return s.st_size;
 	}
-
 	return 0;
 }
 
@@ -481,7 +473,6 @@ void eServiceLibpl::updateEpgCacheNowNext()
 	eServiceReference ref(m_ref);
 	ref.type = eServiceFactoryLibpl::id;
 	ref.path.clear();
-
 	if (eEPGCache::getInstance() && eEPGCache::getInstance()->lookupEventTime(ref, -1, ptr) >= 0)
 	{
 		ePtr<eServiceEvent> current = m_event_now;
@@ -499,25 +490,20 @@ void eServiceLibpl::updateEpgCacheNowNext()
 	}
 
 	int refreshtime = 60;
-
 	if (!next)
 	{
 		next = m_event_next;
 	}
-
 	if (next)
 	{
 		time_t now = eDVBLocalTimeHandler::getInstance()->nowTime();
 		refreshtime = (int)(next->getBeginTime() - now) + 3;
-
 		if (refreshtime <= 0 || refreshtime > 60)
 		{
 			refreshtime = 60;
 		}
 	}
-
 	m_nownext_timer->startLongTimer(refreshtime);
-
 	if (update)
 	{
 		m_event((iPlayableService*)this, evUpdatedEventInfo);
@@ -1199,53 +1185,79 @@ int eServiceLibpl::getInfo(int w)
 {
 	switch (w)
 	{
-		case sServiceref: return m_ref;
-		case sVideoHeight: return m_height;
-		case sVideoWidth: return m_width;
-		case sFrameRate: return m_framerate;
-		case sProgressive: return m_progressive;
-		case sAspect: return m_aspect;
-		case sTagTitle:
-		case sTagArtist:
-		case sTagAlbum:
-		case sTagTitleSortname:
-		case sTagArtistSortname:
-		case sTagAlbumSortname:
-		case sTagDate:
-		case sTagComposer:
-		case sTagGenre:
-		case sTagComment:
-		case sTagExtendedComment:
-		case sTagLocation:
-		case sTagHomepage:
-		case sTagDescription:
-		case sTagVersion:
-		case sTagISRC:
-		case sTagOrganization:
-		case sTagCopyright:
-		case sTagCopyrightURI:
-		case sTagContact:
-		case sTagLicense:
-		case sTagLicenseURI:
-		case sTagCodec:
-		case sTagAudioCodec:
-		case sTagVideoCodec:
-		case sTagEncoder:
-		case sTagLanguageCode:
-		case sTagKeywords:
-		case sTagChannelMode:
-		case sUser+12:
-			return resIsString;
-		case sTagTrackGain:
-		case sTagTrackPeak:
-		case sTagAlbumGain:
-		case sTagAlbumPeak:
-		case sTagReferenceLevel:
-		case sTagBeatsPerMinute:
-		case sTagImage:
-		case sTagPreviewImage:
-		case sTagAttachment:
-			return resIsPyObject;
+	case sServiceref: return m_ref;
+	case sVideoHeight: return m_height;
+	case sVideoWidth: return m_width;
+	case sFrameRate: return m_framerate;
+	case sProgressive: return m_progressive;
+	case sAspect: return m_aspect;
+	case sTagTitle:
+	case sTagArtist:
+	case sTagAlbum:
+	case sTagTitleSortname:
+	case sTagArtistSortname:
+	case sTagAlbumSortname:
+	case sTagDate:
+	case sTagComposer:
+	case sTagGenre:
+	case sTagComment:
+	case sTagExtendedComment:
+	case sTagLocation:
+	case sTagHomepage:
+	case sTagDescription:
+	case sTagVersion:
+	case sTagISRC:
+	case sTagOrganization:
+	case sTagCopyright:
+	case sTagCopyrightURI:
+	case sTagContact:
+	case sTagLicense:
+	case sTagLicenseURI:
+	case sTagCodec:
+	case sTagAudioCodec:
+	case sTagVideoCodec:
+	case sTagEncoder:
+	case sTagLanguageCode:
+	case sTagKeywords:
+	case sTagChannelMode:
+	case sUser+12:
+		return resIsString;
+	case sTagTrackGain:
+	case sTagTrackPeak:
+	case sTagAlbumGain:
+	case sTagAlbumPeak:
+	case sTagReferenceLevel:
+	case sTagBeatsPerMinute:
+	case sTagImage:
+	case sTagPreviewImage:
+	case sTagAttachment:
+		return resIsPyObject;
+	case sTagTrackNumber:
+		return streamid.programid;
+	case sTagTrackCount:
+		return fileinfo.u32ProgramNum;
+	case sTagAlbumVolumeNumber:
+		return resNA;
+	case sTagAlbumVolumeCount:
+		return resNA;
+	case sTagBitrate:
+		return fileinfo.u32Bitrate;
+	case sTagNominalBitrate:
+		return fileinfo.u32Bitrate;
+	case sTagMinimumBitrate:
+		return fileinfo.u32Bitrate;
+	case sTagMaximumBitrate:
+		return fileinfo.u32Bitrate;
+	case sTagSerial:
+		return resNA;
+	case sTagEncoderVersion:
+		if (pstVidStream)
+		{
+			return pstVidStream->u32CodecVersion;
+		}
+		break;
+	case sTagCRC:
+		return resNA;
 		case sBuffer:
 			return m_bufferInfo.bufferPercent;
 		default:
@@ -1278,6 +1290,15 @@ std::string eServiceLibpl::getInfoString(int w)
 	switch (w)
 	{
 		case sTagTitle:
+		if (pstProgram)
+		{
+			return pstProgram->aszServiceName;
+		}
+		break;
+	case sTagArtist:
+		break;
+	case sTagAlbum:
+		break;
 		case sTagTitleSortname:
 			return getTag("title");
 		case sTagArtist:
@@ -1759,7 +1780,6 @@ void eServiceLibpl::loadCuesheet()
 	m_cuesheet_changed = 0;
 	m_event((iPlayableService*)this, evCuesheetChanged);
 }
-
 /* cuesheet CVR */
 void eServiceLibpl::saveCuesheet()
 {
@@ -1768,7 +1788,6 @@ void eServiceLibpl::saveCuesheet()
 	/* save cuesheet only when main file is accessible and no libeplayer chapters avbl*/
 	if ((::access(filename.c_str(), R_OK) < 0) || m_use_chapter_entries)
 		return;
-
 	filename.append(".cuts");
 	/* do not save to file if there are no cuts */
 	/* remove the cuts file if cue is empty */
