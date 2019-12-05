@@ -1811,7 +1811,7 @@ void eServiceLibpl::gotThreadMessage(const int &msg)
 
 void libeplayerMessage(int message) // call from libeplayer
 {
-	// eDebug("[eServiceLibpl::%s] %d", __func__, message);
+	eDebug("[eServiceLibpl::%s] %d", __func__, message);
 	eServiceLibpl *serv = eServiceLibpl::getInstance();
 	serv->inst_m_pump->send(message);
 }
