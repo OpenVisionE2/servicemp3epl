@@ -5,12 +5,9 @@ AM_CPPFLAGS = \
 	@PYTHON_CPPFLAGS@ \
 	-include Python.h
 
-AM_CPPFLAGS += \
-        -I$(top_srcdir)/../misc/tools/libeplayer3/include
 AM_CXXFLAGS = \
 	-Wall \
 	@ENIGMA2_CFLAGS@
-
 
 plugindir = $(libdir)/enigma2/python/Plugins/SystemPlugins/Servicelibpl
 
