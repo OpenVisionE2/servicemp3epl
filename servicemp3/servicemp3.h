@@ -24,7 +24,7 @@ public:
 		idServiceMP3 = 5001
 	};
 #else
-	enum { id = 0x1001 };
+	enum { id = eServiceReference::idServiceMP3 };
 #endif
 		// iServiceHandler
 	RESULT play(const eServiceReference &, ePtr<iPlayableService> &ptr);
