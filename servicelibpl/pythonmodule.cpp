@@ -3,7 +3,7 @@
 
 static PyMethodDef servicelibplMethods[] =
 {
-	 {NULL,NULL,0,NULL}
+	{NULL,NULL,0,NULL}
 };
 
 PyMODINIT_FUNC
