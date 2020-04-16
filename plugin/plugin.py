@@ -1,7 +1,7 @@
 from Plugins.Plugin import PluginDescriptor
 
 def autostart(reason, **kwargs):
-	import servicelibpl
+	from Plugins.SystemPlugins.Servicelibpl import servicelibpl
 
 def Plugins(**kwargs):
 	return [
