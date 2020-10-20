@@ -506,10 +506,15 @@ eServiceMP3::eServiceMP3(eServiceReference ref):
 	m_audiosink_not_running = false;
 	m_use_chapter_entries = false; /* TOC chapter support CVR */
 	m_last_seek_pos = 0; /* CVR last seek position */
+<<<<<<< HEAD
 	m_play_position_timer = eTimer::create(eApp);
 	CONNECT(m_play_position_timer->timeout, eServiceMP3::playPositionTiming);
 	m_use_last_seek = false;
 	m_useragent = "Enigma2 HbbTV/1.1.1 (+PVR+RTSP+DL;OpenPLi;;;)";
+=======
+#endif
+	m_useragent = "Enigma2 HbbTV/1.1.1 (+PVR+RTSP+DL;OpenVision;;;)";
+>>>>>>> 4b3c377... Test
 	m_extra_headers = "";
 	m_download_buffer_path = "";
 	m_prev_decoder_time = -1;
@@ -947,7 +952,7 @@ RESULT eServiceMP3::stop()
 
 	eDebug("[eServiceMP3] stop %s", m_ref.path.c_str());
 	m_state = stStopped;
-	m_subtitles_paused = false
+	m_subtitles_paused = false;
 	GstStateChangeReturn ret;
 	GstState state, pending;
 	/* make sure that last state change was successfull */
@@ -1209,9 +1214,13 @@ seek_unpause:
 	{
 		if (ratio >= 0.0)
 		{
+<<<<<<< HEAD
 			gst_element_seek(m_gst_playbin, ratio, GST_FORMAT_TIME,
 				(GstSeekFlags)(GST_SEEK_FLAG_FLUSH | GST_SEEK_FLAG_TRICKMODE | GST_SEEK_FLAG_TRICKMODE_NO_AUDIO),
 				GST_SEEK_TYPE_SET, pos, GST_SEEK_TYPE_SET, -1);
+=======
+			gst_element_seek(m_gst_playbin, ratio, GST_FORMAT_TIME, (GstSeekFlags)(GST_SEEK_FLAG_FLUSH | GST_SEEK_FLAG_KEY_UNIT | GST_SEEK_FLAG_SKIP), GST_SEEK_TYPE_SET, pos, GST_SEEK_TYPE_SET, -1);
+>>>>>>> 4b3c377... Test
 		}
 		else
 		{
@@ -1882,6 +1891,7 @@ void eServiceMP3::gstBusCall(GstMessage *msg)
 
 			switch(transition)
 			{
+<<<<<<< HEAD
 				GstStateChangeReturn ret;
 				case GST_STATE_CHANGE_NULL_TO_READY:
 				{
@@ -1899,12 +1909,26 @@ void eServiceMP3::gstBusCall(GstMessage *msg)
 						gst_element_set_state (m_gst_playbin, GST_STATE_PLAYING);
 						m_is_live = true;
 					}
+=======
+				case GST_STATE_CHANGE_NULL_TO_READY:
+				{
+					m_event(this, evStart);
+>>>>>>> 4b3c377... Test
 				}	break;
 				case GST_STATE_CHANGE_READY_TO_PAUSED:
 				{
 					m_state = stRunning;
+<<<<<<< HEAD
 					m_event(this, evStart);
 					if (dvb_subsink)
+=======
+#if GST_VERSION_MAJOR >= 1
+					GValue result = { 0, };
+#endif
+					GstIterator *children;
+					subsink = gst_bin_get_by_name(GST_BIN(m_gst_playbin), "subtitle_sink");
+					if (subsink)
+>>>>>>> 4b3c377... Test
 					{
 #ifdef GSTREAMER_SUBTITLE_SYNC_MODE_BUG
 						/*
@@ -3095,6 +3119,8 @@ void eServiceMP3::pushSubtitles()
 				m_subtitle_widget->setPage(pango_page);
 			}
 		}
+
+	}
 
 	// no more subs in cache, fall through
 
