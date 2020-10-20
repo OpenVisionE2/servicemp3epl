@@ -303,7 +303,7 @@ eServiceLibpl::eServiceLibpl(eServiceReference ref):
 	m_cuesheet_changed(0),
 	m_cutlist_enabled(1),
 	m_ref(ref),
-	m_pump(eApp, 1)
+	m_pump(eApp, 1, "eServiceLibpl")
 {
 	eDebug("[eServiceLibpl::%s]", __func__);
 	m_subtitle_pages = NULL;

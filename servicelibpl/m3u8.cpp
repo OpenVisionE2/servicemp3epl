@@ -133,7 +133,7 @@ int M3U8VariantsExplorer::getVariantsFromMasterUrl(const std::string& url, unsig
     }
     //eDebug("[m3u8::%s] - Connect desc = %d", __func__, sd);
 
-    std::string userAgent = "Enigma2 HbbTV/1.1.1 (+PVR+RTSP+DL;OpenPLi;;;)";
+    std::string userAgent = "Enigma2 HbbTV/1.1.1 (+PVR+RTSP+DL;OpenVision;;;)";
     std::string path = purl.path();
     std::string query = purl.query();
     if (!query.empty())
