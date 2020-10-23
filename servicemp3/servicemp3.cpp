@@ -544,6 +544,7 @@ eServiceMP3::eServiceMP3(eServiceReference ref):
 #if defined ENABLE_GSTREAMER \
  || defined ENABLE_DUAL_MEDIAFW
 	m_stream_tags = 0;
+#endif
 	m_currentAudioStream = -1;
 	m_currentSubtitleStream = -1;
 	m_cachedSubtitleStream = -2; /* report subtitle stream to be 'cached'. TODO: use an actual cache. */
@@ -1413,7 +1414,7 @@ int getSpeed(int ratio)
 	{
 		if (speed_mapping[i] == ratio)
 		{
-			return speed_mapping[i+1];
+			return speed_mapping[i + 1];
 		}
 		i += 2;
 	}
@@ -1423,6 +1424,8 @@ int getSpeed(int ratio)
 
 RESULT eServiceMP3::setSlowMotion(int ratio)
 {
+#if defined ENABLE_GSTREAMER \
+ || defined ENABLE_DUAL_MEDIAFW
 	if (!ratio)
 	{
 		return 0;
@@ -1580,7 +1583,7 @@ RESULT eServiceMP3::getLength(pts_t &pts)
 	{
 		return -1;
 	}
-	/* len is in nanoseconds. we have 90.000 pts per second. */
+	/* len is in nanoseconds. There are 90.000 pts per second. */
 	pts = len / 11111LL;
 #else // eplayer3
 	if (m_state != stRunning)
@@ -1755,7 +1758,7 @@ seek_unpause:
 	ret = gst_element_get_state(m_gst_playbin, &state, &pending, 2 * GST_SECOND);
 	if (state != GST_STATE_PLAYING)
 	{
-		eDebug("[eServiceMP3::%s] set unpause or change playrate when gst was state:%s pending:%s ret:%s", __func__,
+		eDebug("[eServiceMP3::%s] set unpause or change playrate when gst was state: %s, pending: %s, ret: %s", __func__,
 				gst_element_state_get_name(state),
 				gst_element_state_get_name(pending),
 				gst_element_state_change_return_get_name(ret));
@@ -1878,8 +1881,8 @@ RESULT eServiceMP3::getPlayPosition(pts_t &pts)
 	{
 		return -1;
 	}
-	// allow only one ioctl call per second
-	// in case of seek procedure, the position
+	// Allow only one ioctl call per second.
+	// In case of seek procedure, the position
 	// is updated by the seektoImpl function.
 	if (!m_use_last_seek)
 	{
@@ -1929,7 +1932,7 @@ RESULT eServiceMP3::getPlayPosition(pts_t &pts)
 		}
 	}
 
-	/* pos is in nanoseconds. we have 90 000 pts per second. */
+	/* pos is in nanoseconds. There are have 90 000 pts per second. */
 	m_last_seek_pos = pos / 11111LL;
 	pts = m_last_seek_pos;
 #else // eplayer3 code
@@ -1953,7 +1956,7 @@ RESULT eServiceMP3::getPlayPosition(pts_t &pts)
 	{
 		return -1;
 	}
-	/* len is in nanoseconds. we have 90.000 pts per second. */
+	/* len is in nanoseconds. There are 90.000 pts per second. */
 	pts = vpts;
 #endif
 	return 0;
@@ -3339,7 +3342,7 @@ void eServiceMP3::gstBusCall(GstMessage *msg)
 				gst_message_parse_buffering_stats(msg, &mode, &(m_bufferInfo.avgInRate), &(m_bufferInfo.avgOutRate), &(m_bufferInfo.bufferingLeft));
 				m_event((iPlayableService*)this, evBuffering);
 				/*
-				 * we do not react to buffer level messages, unless we are configured to use a prefill buffer
+				 * We do not react to buffer level messages, unless we are configured to use a prefill buffer
 				 * (even if we are not configured to, we still use the buffer, but we rely on it to remain at the
 				 * healthy level at all times, without ever having to pause the stream)
 				 *
@@ -3359,7 +3362,7 @@ void eServiceMP3::gstBusCall(GstMessage *msg)
 							gst_element_set_state (m_gst_playbin, GST_STATE_PLAYING);
 						}
 						/*
-						 * when we start the pipeline, the contents of the buffer will immediately drain
+						 * When we start the pipeline, the contents of the buffer will immediately drain
 						 * into the (hardware buffers of the) sinks, so we will receive low buffer level
 						 * messages right away.
 						 * Ignore the first few buffering messages, giving the buffer the chance to recover
@@ -3394,7 +3397,7 @@ void eServiceMP3::handleMessage(GstMessage *msg)
 	if (GST_MESSAGE_TYPE(msg) == GST_MESSAGE_STATE_CHANGED && GST_MESSAGE_SRC(msg) != GST_OBJECT(m_gst_playbin))
 	{
 		/*
-		 * ignore verbose state change messages for all active elements;
+		 * Ignore verbose state change messages for all active elements;
 		 * we only need to handle state-change events for the playbin
 		 */
 		gst_message_unref(msg);
@@ -4111,12 +4114,12 @@ void eServiceMP3::pushSubtitles()
 		}
 		if (m_decoder_time_valid_state < 4)
 		{
-//			eDebug("[eServiceMP3::%s] *** push subtitles, waiting for clock to stabilise", __func__);
+//			eDebug("[eServiceMP3::%s] Waiting for clock to stabilise", __func__);
 			m_prev_decoder_time = running_pts;
 			next_timer = 100;
 			goto exit;
 		}
-//		eDebug("[eServiceMP3::%s] *** push subtitles, clock stable", __func__);
+//		eDebug("[eServiceMP3::%s] Clock stable", __func__);
 	}
 	decoder_ms = running_pts / 90;
 
@@ -4149,13 +4152,13 @@ void eServiceMP3::pushSubtitles()
 
 		if (diff_end_ms < 0)
 		{
-//			eDebug("[eServiceMP3::%s] *** current sub has already ended, skip: %d", __func__, diff_end_ms);
+//			eDebug("[eServiceMP3::%s] Current sub has already ended, skip: %d", __func__, diff_end_ms);
 			continue;
 		}
 
 		if (diff_start_ms > 20)
 		{
-//			eDebug("[eServiceMP3::%s] *** current sub in the future, start timer, %d", __func__, diff_start_ms);
+//			eDebug("[eServiceMP3::%s] Current sub in the future, start timer, %d", __func__, diff_start_ms);
 			next_timer = diff_start_ms;
 			goto exit;
 		}
@@ -4163,9 +4166,10 @@ void eServiceMP3::pushSubtitles()
 		// showtime
 		if (m_subtitle_widget && !m_paused)
 		{
-//			eDebug("[eServiceMP3::%s] *** current sub actual, show!", __func__);
-
 			int timeout;
+
+//			eDebug("[eServiceMP3::%s] Current sub actual, show!", __func__);
+
 			if (!m_subtitles_paused)
 			{
 				timeout = end_ms - decoder_ms;	// take late start into account
@@ -4189,7 +4193,7 @@ void eServiceMP3::pushSubtitles()
 				gRGB rgbcol(0xD0,0xD0,0xD0);
 
 				pango_page.m_elements.push_back(ePangoSubtitlePageElement(rgbcol, current->second.text.c_str()));
-				pango_page.m_show_pts = start_ms * 90;			// actually completely unused by widget!
+				pango_page.m_show_pts = start_ms * 90;  // actually completely unused by widget!
 				pango_page.m_timeout = timeout;
 
 				m_subtitle_widget->setPage(pango_page);
@@ -4202,7 +4206,7 @@ void eServiceMP3::pushSubtitles()
 exit:
 	if (next_timer == 0)
 	{
-//		eDebug("[eServiceMP3::%s] *** next timer = 0, set default timer!", __func__);
+//		eDebug("[eServiceMP3::%s] Next timer = 0, set default timer!", __func__);
 		next_timer = 1000;
 	}
 

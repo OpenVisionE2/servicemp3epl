@@ -283,7 +283,7 @@ public:
 		{
 		}
 	};
-#else // eplayer3
+#else  // eplayer3
 	struct audioStream
 	{
 		audiotype_t type;
@@ -437,11 +437,10 @@ private:
 		Message()
 			:type(-1)
 		{}
-		Message(int type, unsigned char *text)
+		Message(int type)
 			:type(type)
 		{}
 		int type;
-		unsigned char *text;
 	};
 	eFixedMessagePump<Message> m_pump;
 	static void eplayerCBsubtitleAvail(long int duration_ns, size_t len, char * buffer, void* user_data);

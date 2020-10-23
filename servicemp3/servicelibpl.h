@@ -31,9 +31,9 @@ public:
 	};
 #else
 #if defined ENABLE_GSTREAMER
-	enum { id = 4099 }; // hybrid
+	enum { id = 4099 };  // hybrid
 #else
-	enum { id = 4097 }; // standalone
+	enum { id = 4097 };  // standalone
 #endif
 #endif
 

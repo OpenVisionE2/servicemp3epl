@@ -1077,7 +1077,7 @@ int getSpeed(int ratio)
 
 RESULT eServiceLibpl::setSlowMotion(int ratio)
 {
-	// konfetti: in libeplayer3 we changed this because I do not like application specific stuff in a library
+	// konfetti: In libeplayer3 we changed this because I do not like application specific stuff in a library
 	int speed = getSpeed(ratio);
 
 	if (m_state == stRunning && speed != -1 && ratio > 1)
@@ -1579,48 +1579,48 @@ RESULT eServiceLibpl::getTrackInfo(struct iAudioTrackInfo &info, unsigned int i)
 	}
 	switch (m_audioStreams[i].type)
 	{
-		case 1: //atMPEG
+		case 1:  //atMPEG
 		{
 			info.m_description = "MPEG";
 			break;
 		}
-		case 2: //atMP3
+		case 2:  //atMP3
 		{
 			info.m_description = "MP3";
 			break;
 		}
-		case 3: //atAC3
+		case 3:  //atAC3
 		{
 			info.m_description = "AC3";
 			break;
 		}
-		case 4: //atDTS
+		case 4:  //atDTS
 		{
 			info.m_description = "DTS";
 			break;
 		}
-		case 5: //atAAC
+		case 5:  //atAAC
 		{
 			info.m_description = "AAC";
 			break;
 		}
-		case 0: //atUnknown
-		case 6: //atPCM
+		case 0:  //atUnknown
+		case 6:  //atPCM
 		{
 			info.m_description = "PCM";
 			break;
 		}
-		case 8: //atFLAC
+		case 8:  //atFLAC
 		{
 			info.m_description = "FLAC";
 			break;
 		}
-		case 7: //atOGG
+		case 7:  //atOGG
 		{
 			info.m_description = "OGG";
 			break;
 		}
-		case 9: //atWMA
+		case 9:  //atWMA
 		{
 			info.m_description = "WMA";
 			break;
@@ -1941,7 +1941,7 @@ void eServiceLibpl::getChapters()
 		}
 		for (unsigned int i = 0; i < positions.size(); i++)
 		{
-			/* first chapter is movie start; no cut needed */
+			/* First chapter is movie start; no cut needed */
 			if (i > 0)
 			{
 				if (positions[i] > 0)
@@ -2057,9 +2057,9 @@ void eServiceLibpl::gotThreadMessage(const int &msg)
 			pullSubtitle();
 			break;
 		}
-		case 1: // thread stopped
+		case 1:  // thread stopped
 		{
-			eDebug("[eServiceLibpl::%s] issuing EOF...", __func__);
+			eDebug("[eServiceLibpl::%s] Issuing EOF...", __func__);
 			m_event(this, evEOF);
 			break;
 		}
@@ -2086,7 +2086,7 @@ void eServiceLibpl::gotThreadMessage(const int &msg)
 	}
 }
 
-void libeplayerMessage(int message) // call from libeplayer
+void libeplayerMessage(int message)  // call from libeplayer
 {
 	// eDebug("[eServiceLibpl::%s] %d", __func__, message);
 	eServiceLibpl *serv = eServiceLibpl::getInstance();
