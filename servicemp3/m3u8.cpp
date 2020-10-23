@@ -61,7 +61,7 @@ int M3U8VariantsExplorer::parse_attribute(char **ptr, char **key, char **value)
     if (ptr == NULL || *ptr == NULL || key == NULL || value == NULL)
         return -1;
 
-    char *end; 
+    char *end;
     char *p;
     p = end = strchr(*ptr, ',');
     if (end)
@@ -140,11 +140,11 @@ int M3U8VariantsExplorer::getVariantsFromMasterUrl(const std::string& url, unsig
         path += "?" + query;
     std::string request = "GET ";
     request.append(path).append(" HTTP/1.1\r\n");
-    request.append("Host: ").append(purl.host());
-    if (purl.port() > 0)
-    {
-        request.append(":").append(std::to_string(purl.port()));
-    }
+    request.append("Host: ").append(purl.host()).append("\r\n");
+//    if (purl.port() > 0)
+//    {
+//        request.append(":").append(std::to_string(purl.port()));
+//    }
     request.append("\r\n");
     request.append("User-Agent: ").append(userAgent).append("\r\n");
     request.append("Accept: */*\r\n");

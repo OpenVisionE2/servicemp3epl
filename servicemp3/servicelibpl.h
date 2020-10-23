@@ -8,7 +8,7 @@
 #include <lib/dvb/teletext.h>
 #include <lib/gui/esubtitle.h>
 
-#include <libeplayer3/player.h>
+#include <player.h>
 
 #include "m3u8.h"
 
@@ -24,13 +24,17 @@ class eServiceFactoryLibpl: public iServiceHandler
 public:
 	eServiceFactoryLibpl();
 	virtual ~eServiceFactoryLibpl();
-#ifdef ENABLE_GSTREAMER
+#if defined ENABLE_DUAL_MEDIAFW
 	enum {
 		id = 4097,
 		idServiceLibpl = 5003
 	};
 #else
-	enum { id = 0x1001 };
+#if defined ENABLE_GSTREAMER
+	enum { id = 4099 }; // hybrid
+#else
+	enum { id = 4097 }; // standalone
+#endif
 #endif
 
 	// iServiceHandler
@@ -42,7 +46,7 @@ public:
 
 private:
 	ePtr<eStaticServiceLibplInfo> m_service_info;
-#ifdef ENABLE_GSTREAMER
+#if defined ENABLE_DUAL_MEDIAFW
 	bool defaultMP3_Player;
 #endif
 };
@@ -167,6 +171,8 @@ public:
 	int getPCMDelay();
 	void setAC3Delay(int);
 	void setPCMDelay(int);
+	int ac3_delay;
+	int pcm_delay;
 
 	struct audioStream
 	{
@@ -282,5 +288,5 @@ private:
 	void getChapters();
 	gint m_aspect, m_width, m_height, m_framerate, m_progressive;
 };
-
 #endif
+// vim:ts=4

@@ -1,4 +1,13 @@
+#if defined ENABLE_DUAL_MEDIAFW \
+ || defined ENABLE_GSTREAMER
 #include "servicemp3.h"
+#endif
+
+#if defined ENABLE_DUAL_MEDIAFW \
+ || defined ENABLE_LIBEPLAYER3
+#include "servicelibpl.h"
+#endif
+
 #include <Python.h>
 
 static PyMethodDef servicemp3Methods[] =

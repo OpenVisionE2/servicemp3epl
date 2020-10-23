@@ -6,7 +6,20 @@
 #include <lib/dvb/pmt.h>
 #include <lib/dvb/subtitle.h>
 #include <lib/dvb/teletext.h>
+#if defined ENABLE_GSTREAMER \
+ || defined ENABLE_DUAL_MEDIAFW
 #include <gst/gst.h>
+#else
+#include <common.h>
+#include <subtitle.h>
+#define gint int
+#define gint64 int64_t
+extern OutputHandler_t		OutputHandler;
+extern PlaybackHandler_t	PlaybackHandler;
+extern ContainerHandler_t	ContainerHandler;
+extern ManagerHandler_t	ManagerHandler;
+#endif
+
 /* for subtitles */
 #include <lib/gui/esubtitle.h>
 
@@ -18,7 +31,7 @@ class eServiceFactoryMP3: public iServiceHandler
 public:
 	eServiceFactoryMP3();
 	virtual ~eServiceFactoryMP3();
-#ifdef ENABLE_LIBEPLAYER3
+#if defined ENABLE_DUAL_MEDIAFW
 	enum {
 		id = 4097,
 		idServiceMP3 = 5001
@@ -34,7 +47,7 @@ public:
 	RESULT offlineOperations(const eServiceReference &, ePtr<iServiceOfflineOperations> &ptr);
 private:
 	ePtr<eStaticServiceMP3Info> m_service_info;
-#ifdef ENABLE_LIBEPLAYER3
+#if defined ENABLE_DUAL_MEDIAFW
 	bool defaultMP3Player;
 #endif
 };
@@ -77,11 +90,18 @@ class eServiceMP3InfoContainer: public iServiceInfoContainer
 	DECLARE_REF(eServiceMP3InfoContainer);
 
 	double doubleValue;
+#if defined ENABLE_GSTREAMER \
+ || defined ENABLE_DUAL_MEDIAFW
+
 	GstBuffer *bufferValue;
+#endif
 
 	unsigned char *bufferData;
 	unsigned int bufferSize;
+#if defined ENABLE_GSTREAMER \
+ || defined ENABLE_DUAL_MEDIAFW
 	GstMapInfo map;
+#endif
 
 public:
 	eServiceMP3InfoContainer();
@@ -90,9 +110,14 @@ public:
 	double getDouble(unsigned int index) const;
 	unsigned char *getBuffer(unsigned int &size) const;
 	void setDouble(double value);
+#if defined ENABLE_GSTREAMER \
+ || defined ENABLE_DUAL_MEDIAFW
 	void setBuffer(GstBuffer *buffer);
+#endif
 };
 
+#if defined ENABLE_GSTREAMER \
+ || defined ENABLE_DUAL_MEDIAFW
 class GstMessageContainer: public iObject
 {
 	DECLARE_REF(GstMessageContainer);
@@ -122,6 +147,7 @@ public:
 };
 
 typedef struct _GstElement GstElement;
+#endif
 
 typedef enum { atUnknown, atMPEG, atMP3, atAC3, atDTS, atAAC, atPCM, atOGG, atFLAC, atWMA } audiotype_t;
 typedef enum { stUnknown, stPlainText, stSSA, stASS, stSRT, stVOB, stPGS } subtype_t;
@@ -189,7 +215,10 @@ public:
 	RESULT getEvent(ePtr<eServiceEvent> &evt, int nownext);
 	int getInfo(int w);
 	std::string getInfoString(int w);
+#if defined ENABLE_GSTREAMER \
+ || defined ENABLE_DUAL_MEDIAFW
 	ePtr<iServiceInfoContainer> getInfoObject(int w);
+#endif
 
 		// iAudioTrackSelection
 	int getNumberOfTracks();
@@ -218,6 +247,9 @@ public:
 	void setAC3Delay(int);
 	void setPCMDelay(int);
 
+
+#if defined ENABLE_GSTREAMER \
+ || defined ENABLE_DUAL_MEDIAFW
 	struct audioStream
 	{
 		GstPad* pad;
@@ -251,6 +283,38 @@ public:
 		{
 		}
 	};
+#else // eplayer3
+	struct audioStream
+	{
+		audiotype_t type;
+		std::string language_code; /* iso-639, if available. */
+		std::string codec; /* clear text codec description */
+		audioStream()
+			:type(atUnknown)
+		{
+		}
+	};
+	struct subtitleStream
+	{
+		subtype_t type;
+		std::string language_code; /* iso-639, if available. */
+		int id;
+		subtitleStream()
+		{
+		}
+	};
+	struct sourceStream
+	{
+		audiotype_t audiotype;
+		containertype_t containertype;
+		bool is_video;
+		bool is_streaming;
+		sourceStream()
+			:audiotype(atUnknown), containertype(ctNone), is_video(false), is_streaming(false)
+		{
+		}
+	};
+#endif
 	struct bufferInfo
 	{
 		gint bufferPercent;
@@ -303,10 +367,17 @@ private:
 	std::vector<audioStream> m_audioStreams;
 	std::vector<subtitleStream> m_subtitleStreams;
 	iSubtitleUser *m_subtitle_widget;
+#if defined ENABLE_GSTREAMER \
+ || defined ENABLE_DUAL_MEDIAFW
 	gdouble m_currentTrickRatio;
+#else  // eplayer3
+	int m_currentTrickRatio;
+#endif
 	friend class eServiceFactoryMP3;
 	eServiceReference m_ref;
 	int m_buffer_size;
+#if defined ENABLE_GSTREAMER \
+ || defined ENABLE_DUAL_MEDIAFW
 	int m_ignore_buffering_messages;
 	bool m_is_live;
 	bool m_subtitles_paused;
@@ -334,6 +405,10 @@ private:
 		stIdle, stRunning, stStopped,
 	};
 	int m_state;
+#endif
+
+#if defined ENABLE_GSTREAMER \
+ || defined ENABLE_DUAL_MEDIAFW
 	GstElement *m_gst_playbin, *audioSink, *videoSink;
 	GstTagList *m_stream_tags;
 	bool m_coverart;
@@ -354,6 +429,23 @@ private:
 	void HandleTocEntry(GstMessage *msg);
 	static gint match_sinktype(const GValue *velement, const gchar *type);
 	static void handleElementAdded(GstBin *bin, GstElement *element, gpointer user_data);
+#else  // eplayer3
+	Context_t *player;
+
+	struct Message
+	{
+		Message()
+			:type(-1)
+		{}
+		Message(int type, unsigned char *text)
+			:type(type)
+		{}
+		int type;
+		unsigned char *text;
+	};
+	eFixedMessagePump<Message> m_pump;
+	static void eplayerCBsubtitleAvail(long int duration_ns, size_t len, char * buffer, void* user_data);
+#endif
 
 	struct subtitle_page_t
 	{
@@ -382,18 +474,28 @@ private:
 	int m_decoder_time_valid_state;
 
 	void pushSubtitles();
+#if defined ENABLE_GSTREAMER \
+ || defined ENABLE_DUAL_MEDIAFW
 	void pullSubtitle(GstBuffer *buffer);
+#endif
 	void sourceTimeout();
 	sourceStream m_sourceinfo;
+#if defined ENABLE_GSTREAMER \
+ || defined ENABLE_DUAL_MEDIAFW
 	gulong m_subs_to_pull_handler_id, m_notify_source_handler_id, m_notify_element_added_handler_id;
+#endif
 
 	RESULT seekToImpl(pts_t to);
 
 	gint m_aspect, m_width, m_height, m_framerate, m_progressive, m_gamma;
 	std::string m_useragent;
 	std::string m_extra_headers;
+#if defined ENABLE_GSTREAMER \
+ || defined ENABLE_DUAL_MEDIAFW
 	RESULT trickSeek(gdouble ratio);
+#endif
 	ePtr<iTSMPEGDecoder> m_decoder; // for showSinglePic when radio
 };
 
 #endif
+// vim:ts=4
