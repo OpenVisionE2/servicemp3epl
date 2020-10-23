@@ -1,11 +1,12 @@
 #include "servicelibpl.h"
-
+#include <Python.h>
 
 static PyMethodDef servicelibplMethods[] =
 {
 	{NULL,NULL,0,NULL}
 };
 
+#if PY_MAJOR_VERSION >= 3
 static struct PyModuleDef moduledef = {
 	PyModuleDef_HEAD_INIT,
 	"servicelibpl",         /* m_name */
@@ -22,3 +23,10 @@ PyMODINIT_FUNC PyInit_servicelibpl(void)
 {
 	return PyModule_Create(&moduledef);
 }
+#else
+PyMODINIT_FUNC
+initservicelibpl(void)
+{
+	Py_InitModule("servicelibpl", servicelibplMethods);
+}
+#endif
