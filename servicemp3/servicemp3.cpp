@@ -1608,7 +1608,7 @@ RESULT eServiceMP3::seekToImpl(pts_t to)
 #if defined ENABLE_GSTREAMER \
  || defined ENABLE_DUAL_MEDIAFW
 	m_last_seek_pos = to;
-	if (!gst_element_seek m_gst_playbin, m_currentTrickRatio, GST_FORMAT_TIME, (GstSeekFlags)(GST_SEEK_FLAG_FLUSH | GST_SEEK_FLAG_KEY_UNIT),
+	if (!gst_element_seek(m_gst_playbin, m_currentTrickRatio, GST_FORMAT_TIME, (GstSeekFlags)(GST_SEEK_FLAG_FLUSH | GST_SEEK_FLAG_KEY_UNIT),
 		GST_SEEK_TYPE_SET, (gint64)(m_last_seek_pos * 11111LL),
 		GST_SEEK_TYPE_NONE, GST_CLOCK_TIME_NONE))
 	{
