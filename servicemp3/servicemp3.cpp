@@ -622,6 +622,11 @@ eServiceMP3::eServiceMP3(eServiceReference ref):
 	{
 		filename = m_ref.path.c_str();
 	}
+
+	if (!m_ref.alternativeurl.empty())
+	{
+		filename = m_ref.alternativeurl.c_str();
+	}
 	const char *ext = strrchr(filename, '.');
 	if (!ext)
 	{
