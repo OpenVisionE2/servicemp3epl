@@ -1189,7 +1189,7 @@ RESULT eServiceMP3::start()
 			{
 				eDebug("[eServiceMP3] failed to start pipeline");
 				stop();
-				break;
+				return -1;
 			}
 			case GST_STATE_CHANGE_SUCCESS:
 			{
