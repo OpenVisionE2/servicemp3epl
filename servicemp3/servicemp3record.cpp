@@ -495,7 +495,11 @@ RESULT eServiceMP3Record::frontendInfo(ePtr<iFrontendInformation> &ptr)
 	return -1;
 }
 
+#if SIGCXX_MAJOR_VERSION == 3
+RESULT eServiceMP3Record::connectEvent(const sigc::slot<void(iRecordableService*,int)> &event, ePtr<eConnection> &connection)
+#else
 RESULT eServiceMP3Record::connectEvent(const sigc::slot2<void,iRecordableService*,int> &event, ePtr<eConnection> &connection)
+#endif
 {
 	connection = new eConnection((iRecordableService*)this, m_event.connect(event));
 	return 0;
