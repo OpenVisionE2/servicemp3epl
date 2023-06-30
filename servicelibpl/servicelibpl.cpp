@@ -21,7 +21,7 @@
 #include <string>
 #include <sys/socket.h>
 #include <linux/netlink.h>
-
+#include <lib/python/python.h>
 #include <linux/dvb/audio.h>
 #include <linux/dvb/video.h>
 #ifdef BINARY_COMPATIBLE_DEBUGLOG
