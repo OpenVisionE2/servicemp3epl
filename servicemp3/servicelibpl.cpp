@@ -13,7 +13,7 @@
 #include <lib/service/service.h>
 #include <lib/gdi/gpixmap.h>
 #include <string>
-
+#include <lib/python/python.h>
 #ifdef ENABLE_GSTREAMER
 #include <lib/base/eenv.h>
 #endif

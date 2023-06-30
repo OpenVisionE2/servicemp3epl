@@ -14,7 +14,7 @@
 #include <servicemp3record.h>
 #include <lib/service/service.h>
 #include <lib/gdi/gpixmap.h>
-
+#include <lib/python/python.h>
 #include <string>
 
 #include <gst/gst.h>
